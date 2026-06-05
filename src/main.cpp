@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <iostream>
 #include <optional>
 #include <sstream>
@@ -6,7 +7,9 @@
 #include <vector>
 #include <wait.h>
 
-std::unordered_set<std::string> builtins = {"exit", "echo", "type"};
+namespace fs = std::filesystem;
+
+std::unordered_set<std::string> builtins = {"exit", "echo", "type", "pwd"};
 
 // split command into whitespace-separated tokens
 std::vector<std::string> tokenize(const std::string& input) {
@@ -89,7 +92,7 @@ int main() {
 
         // read input
         if (!std::getline(std::cin, input)) {
-            break;  // EOF (Ctrl-D)
+            break; // EOF (Ctrl-D)
         }
 
         std::vector<std::string> args = tokenize(input);
@@ -118,6 +121,9 @@ int main() {
             } else {
                 std::cout << "type: " << name << ": not found\n";
             }
+        } else if (command == "pwd") {
+            fs::path cwd = fs::current_path();
+            std::cout << cwd.string() << "\n";
         } else if (auto path = find_executable(command)) {
             last_status = execute_command(*path, args);
         } else {
